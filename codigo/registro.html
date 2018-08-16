@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta charset="UTF-8">
+	<title>Mi APP</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" href="favicon.ico" type="image/x-icon"/>
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<!-- Mi css -->
+	<link rel="stylesheet" href="theme/css/salud.css" />
+	<!-- JS -->
+	<script type='text/javascript'>
+			
+		function callRegistro(){
+			var email = $("#txtEmail").val();
+			var pass = $("#txtPass").val();
+			var nombre = $("#txtNombre").val();
+			var apellido = $("#txtApellido").val();
+			var cedula = $("#txtDocumento").val();
+			var telefono = $("#txtTelefono").val();
+			$.ajax({
+				url: "http://medicort.tribus.com.uy/registrar",
+				type: "POST",
+				dataType: "json",
+				data: {email: email, password: pass, nombre: nombre, apellido: apellido, documento: cedula, telefono: telefono},
+				success: function(response){
+					console.log("success",response);
+					$("#mensaje").text("Usuario registrado con éxito.");
+				},error: function(err1, err2, err3){
+					if(err1.responseJSON)
+					{
+						$("#mensaje").text("Ocurrió un error inesperado. Intente nuevamente en unos segundos.");
+					}
+					console.log("err2",err2);
+					console.log("err3",err3);
+				}
+			});
+		}
+		
+	</script>
+</head>
+<body>
+	<div data-role="content" class="">
+		<div role="main" class="ui-content">
+			<div class="middle full">
+				<img src="theme/img/logo.png">
+			</div>
+			<div role="main" class="ui-content">
+				<p>Complete el siguiente formulario para registrarte en nuestra APP!</p>
+				<input id="txtEmail" type="text" placeholder="Ingrese el email"/>
+				<input id="txtPass" type="text" placeholder="Ingrese el password"/>
+				<input id="txtNombre" type="text" placeholder="Ingrese su nombre"/>
+				<input id="txtApellido" type="text" placeholder="Ingrese su apellido"/>
+				<input id="txtDocumento" type="text" placeholder="Ingrese su cédula de identidad"/>
+				<input id="txtTelefono" type="text" placeholder="Ingrese su teléfono"/>
+				<input type="button" value="Registrarse" onclick="callRegistro()" class="green" style="background-color: #22C7B7;"/>
+			</div>
+			<p id='mensaje'></p>
+		</div>
+	</div>
+	<div data-role="footer" id="foot">
+        <div data-role="navbar">
+            <ul>
+				<li><a href="index.html" data-icon="home">Inicio</a></li>
+				<li><a href="agendar.html" data-icon="calendar">Agendar</a></li>
+				<li><a href="buscarProfesional.html" data-icon="info">+ Info</a></li>
+				<li><a href="centros.html" data-icon="search">Buscar</a></li>
+			</ul>
+		</div>
+	</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

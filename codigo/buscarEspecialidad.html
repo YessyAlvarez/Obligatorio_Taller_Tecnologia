@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta charset="UTF-8">
+	<title>Template generico</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" href="favicon.ico" type="image/x-icon"/>
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDhfTvXeR1_KtzXelJWoMu64w9RaZ7bmE8&callback=initMap" async defer></script>
+	<!-- Mi css -->
+	<link rel="stylesheet" href="theme/css/salud.css" />
+	<!-- JS -->
+	<script type="text/javascript">
+	
+		$(document).ready(function(){
+			loadData();
+		});
+		
+		function loadData(){
+			var nombre = localStorage.getItem("usuario");
+			$("#fulanito").html(nombre);
+			var usuario = localStorage.getItem("usuario_email");
+			$("#txtUsuario").val(usuario);
+			//Apago lo que no necesito aun
+			$(".segundaBusqueda").css("display", "none");
+			$(".infoMedico").css("display", "none");
+			//Especialidad
+			ObtenerEspecialidad();
+		}
+		
+		function ObtenerEspecialidad(){
+			$.ajax({
+				url: "http://medicort.tribus.com.uy/getEspecialidades",
+				type: "GET",
+				dataType: "json",
+				success: function(response){
+					console.log("success",response);
+					$("#especialidad").append( '<option value="" disabled selected="selected" placeholder="aaa">Seleccione una especialidad</option>' );
+					$.each(response.especialidades, function(index, item) {
+						$("#especialidad").append( '<option value="' + item + '"  placeholder="' + item + '">' + (item) +  '</option>' );
+					});
+					$("#especialidad").selectmenu("refresh");
+				},error: function(err1, err2, err3){
+					if(err1.responseJSON)
+					{
+						if(err1.responseJSON.resultado_login == false)
+						{
+							$("#mensaje").text("No se puede acceder al listado de especialidades.");
+						} else {
+							$("#mensaje").text("Ocurrió un error inesperado. Intente nuevamente en unos segundos.");
+						}
+					}
+					console.log("err2",err2);
+					console.log("err3",err3);
+				}
+			});
+		}
+		
+		function callBuscarMedicosPorEspecialidad(){
+			//Quito el boton de buscar medicos por especialidad
+			$(".primeraBusqueda").css("display", "none");
+			
+			//Habilito el nuevo combo y el nuevo boton de busqueda
+			$(".segundaBusqueda").css("display", "block");
+			
+			//Obtengo la especialidad seleccionada
+			var especialidad = $("#especialidad").val();
+			$.ajax({
+				url: "http://medicort.tribus.com.uy/getProfesionalesPorEspecialidad",
+				type: "GET",
+				dataType: "json",
+				data: {especialidad: especialidad},
+				success: function(response){
+					console.log("success",response);
+					$("#selectMedico").append( '<option value="" disabled selected="selected" placeholder="aaa">Seleccione un Medico</option>' );
+					$.each(response.profesionales, function(index, item) {
+							$("#selectMedico").append( '<option value="' + item.id + '" placeholder="' + item.nombre + ' ' + item.apellido + '">' + (item.nombre + ' ' + item.apellido)  +  '</option>' );
+
+					});
+					$("#selectMedico").selectmenu("refresh");
+				},error: function(err1, err2, err3){
+					if(err1.responseJSON)
+					{
+						if(err1.responseJSON.resultado_login == false)
+						{
+							$("#mensaje").text("No se puede acceder al listado de medicos por especialidad dada.");
+						} else {
+							$("#mensaje").text("Ocurrió un error inesperado. Intente nuevamente en unos segundos.");
+						}
+					}
+					console.log("err2",err2);
+					console.log("err3",err3);
+				}
+			});
+		}
+		
+		
+		function callBuscarMedico(){
+			//Muestro la info
+			$(".infoMedico").css("display", "block");
+			//Obtengo el medico
+			var medico = $("#selectMedico").val();
+			$.ajax({
+				url: "http://medicort.tribus.com.uy/getDetalleProfesional",
+				type: "GET",
+				dataType: "json",
+				data: {id: medico},
+				success: function(response){
+					console.log("success",response);
+						$(".nombre").html(response.profesional.nombre + ' ' + response.profesional.apellido);
+						$(".titulo").html(response.profesional.titulo);
+						$(".especialidad").html(response.profesional.especialidad);
+						$(".foto").html("<img src='" + response.profesional.foto + "' style='width: 100%;'>");
+						$(".puntuacion").html(response.profesional.puntuacion);
+						$(".centroMedico").html(response.profesional.centroMedico.nombre);
+						$(".direccion").html(response.profesional.centroMedico.direccion);
+						initMap(response.profesional.centroMedico.localizacion.latitud, response.profesional.centroMedico.localizacion.longitud);x
+				},error: function(err1, err2, err3){
+					if(err1.responseJSON)
+					{
+						if(err1.responseJSON.resultado_login == false)
+						{
+							$("#mensaje").text("No se puede acceder a la informacion del medico.");
+						} else {
+							$("#mensaje").text("Ocurrió un error inesperado. Intente nuevamente en unos segundos.");
+						}
+					}
+					console.log("err2",err2);
+					console.log("err3",err3);
+				}
+			});
+		}
+		
+		
+		function initMap(mLat, mLong) {
+			
+			var directionsDisplay = new google.maps.DirectionsRenderer;
+			var directionsService = new google.maps.DirectionsService;
+			var map = new google.maps.Map(document.getElementById('map'), {
+			  zoom: 14,
+			  center: {lat: mLat, lng: mLong}
+			});
+			directionsDisplay.setMap(map);
+			calculateAndDisplayRoute(directionsService, directionsDisplay, mLat, mLong);
+			document.getElementById('mode').addEventListener('change', function() {
+				calculateAndDisplayRoute(directionsService, directionsDisplay, mLat, mLong);
+			});
+		  }
+		  
+		  
+		  
+		  
+		  function calculateAndDisplayRoute(directionsService, directionsDisplay, mLat, mLong) {
+			var selectedMode = "DRIVING";
+			directionsService.route({
+			  origin: {lat: mLat, lng: mLong},  // Haight.
+			  destination: {lat: mLat, lng: mLong},  // Ocean Beach.
+			  // Note that Javascript allows us to access the constant
+			  // using square brackets and a string value as its
+			  // "property."
+			  travelMode: google.maps.TravelMode[selectedMode]
+			}, function(response, status) {
+			  if (status == 'OK') {
+				directionsDisplay.setDirections(response);
+			  } else {
+				window.alert('Directions request failed due to ' + status);
+			  }
+			});
+      }
+		
+		function limpiar(){
+			//Muestro el boton de buscar medicos por especialidad
+			$(".primeraBusqueda").css("display", "block");
+			//Apago lo que no necesito aun
+			$(".segundaBusqueda").css("display", "none");
+			$(".infoMedico").css("display", "none");
+			//Limpio los campos
+			$("#selectMedico").clear();
+			$(".nombre").html("");
+			$(".titulo").html("");
+			$(".especialidad").html("");
+			$(".foto").html("");
+			$(".puntuacion").html("");
+			$(".centroMedico").html("");
+			$(".direccion").html("");
+			
+		}
+		
+	</script>
+</head>
+<body>
+	<div data-role="header">
+		<div class="header head_theme">
+			<div data-rel="back" class="back">
+				<a href=""><img src="theme/img/back.png"></a>
+			</div>
+			<div class="logo">
+				<img src="theme/img/ico_head.png">
+			</div>
+			<div class="menu">
+				<img src="theme/img/menu.png" class="show">
+				<img src="theme/img/menu_cross.png" class="noshow">
+			</div>
+		</div>
+	</div>
+	<div data-role="content">
+		<div role="main" class="ui-content">
+			<div class="Bienvenido2">Bienvenid@ <span id="fulanito"></span> - <a href="#">Salir</a></div>
+			<h2 class="Bienvenido">Consultar datos de un profesional</h2>
+			<label for="especialidad">Seleccione una especialidad</label>
+			<select name="especialidad" id="especialidad" onchange="limpiar()" ></select>
+			<div class="primeraBusqueda">
+				<input type="button" value="Buscar Medicos" onclick="callBuscarMedicosPorEspecialidad()" class="green" id="searchMedicosEsp" style="background-color: #22C7B7;"/>
+			</div>
+			<div class="segundaBusqueda">
+				<label for="selectMedico" class="selectMedico">Seleccione un medico</label>
+				<select name="selectMedico" id="selectMedico" class="selectMedico"></select>
+				<p>&nbsp;</p>
+				<input type="button" value="Ver informacion" onclick="callBuscarMedico()" class="green" id="searchMedico" style="background-color: #22C7B7;"/>
+			</div>
+			<div class="infoMedico">
+				<div class="">
+					<h3>Datos Personales</h3>
+					<div class="foto"></div>
+					Nombre completo: <span class="nombre"></span>
+					<br/>
+					Titulo universitario: <span class="titulo"></span>
+					<br/>
+					Especialidad: <span class="especialidad"></span>
+					<br/>
+					Puntuacion: <span class="puntuacion"></span>
+					<br/>
+				</div>
+				<div class="">
+					<h3>Datos institucionales</h3>
+					Centro Medico <span class="nombreCentro"></span>
+					<br/>
+					Direccion: <span class="direccion"></span>
+					<br/>
+					<div id="map"></div>
+				</div>
+			</div>
+		</div>
+		<div id="mensaje"></div>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+	</div>
+	<div data-role="footer" id="foot">
+        <div data-role="navbar">
+            <ul>
+				<li><a href="index.html" data-icon="home">Inicio</a></li>
+				<li><a href="agendar.html" data-icon="calendar">Agendar</a></li>
+				<li><a href="buscarProfesional.html" data-icon="info">+ Info</a></li>
+				<li><a href="centros.html" data-icon="search">Buscar</a></li>
+			</ul>
+		</div>
+	</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta charset="UTF-8">
+	<title>Template generico</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" href="favicon.ico" type="image/x-icon"/>
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<!-- Mi css -->
+	<link rel="stylesheet" href="theme/css/salud.css" />
+	<!-- JS -->
+	<script type="text/javascript">
+	
+		$(document).ready(function(){
+			loadData();
+		});
+		
+		function loadData(){
+			var nombre = localStorage.getItem("usuario");
+			$("#fulanito").html(nombre);
+			var usuario = localStorage.getItem("usuario_email");
+			$("#txtUsuario").val(usuario);
+			//Medicos
+			ObtenerMedicos();
+			//Centros Medicos
+			ObtenerCentrosMedicos();
+		}
+		
+		function ObtenerCentrosMedicos(){
+			$.ajax({
+				url: "http://medicort.tribus.com.uy/getCentrosMedicos",
+				type: "GET",
+				dataType: "json",
+				success: function(response){
+					console.log("success",response);
+					$("#selectCentro_Medico").append( '<option value="" disabled selected="selected" placeholder="aaa">Seleccione un Centro Médico</option>' );
+					$.each(response.centrosMedicos, function(index, item) {
+						$("#selectCentro_Medico").append( '<option value="' + item.id + '" placeholder="' + item.nombre + '">' + (item.nombre) +  '</option>' );
+					});
+					$("#selectCentro_Medico").selectmenu("refresh");
+				},error: function(err1, err2, err3){
+					if(err1.responseJSON)
+					{
+						if(err1.responseJSON.resultado_login == false)
+						{
+							$("#mensaje").text("No se puede acceder al listado de centros medicos.");
+						} else {
+							$("#mensaje").text("Ocurrió un error inesperado. Intente nuevamente en unos segundos.");
+						}
+					}
+					console.log("err2",err2);
+					console.log("err3",err3);
+				}
+			});
+		}
+		
+		function ObtenerMedicos(){
+			$.ajax({
+				url: "http://medicort.tribus.com.uy/getProfesionales",
+				type: "GET",
+				dataType: "json",
+				success: function(response){
+					console.log("success",response);
+					$("#selectMedico").append( '<option value="" disabled selected="selected" placeholder="aaa">Seleccione un Médico</option>' );
+					$.each(response.profesionales, function(index, item) {
+						$("#selectMedico").append('<option value="' + item.id + '" selected="selected" placeholder="' + item.id + '">' + (item.nombre + ' ' + item.apellido) +  '</option>');
+					});
+					$("#selectMedico").selectmenu("refresh");
+				},error: function(err1, err2, err3){
+					if(err1.responseJSON)
+					{
+						if(err1.responseJSON.resultado_login == false)
+						{
+							$("#mensaje").text("No se puede acceder momentaneamente al listado de medicos.");
+						} else {
+							$("#mensaje").text("Ocurrió un error inesperado. Intente nuevamente en unos segundos.");
+						}
+					}
+					console.log("err2",err2);
+					console.log("err3",err3);
+				}
+			});
+		}
+		
+		
+		function callReservar(){
+			var fh = $("#txtFecha").val();
+			var fechaHora = fh.replace("T", " ");
+			fechaHora = fechaHora.replace("-", "/");
+			fechaHora = fechaHora.replace("-", "/");
+			//Cambio la forma de la fecha a devolver al servidor
+			var fechaFinal = "";
+			var fechaHoraArray = fechaHora.split(" ");
+			var fechaSplit = fechaHoraArray[0].split("/");
+			fechaFinal = fechaSplit[2] + "/" + fechaSplit[1] + "/" + fechaSplit[0];
+			fechaHoraArray[0] = fechaFinal;
+			
+			var usuario = $("#txtUsuario").val();
+			var medico = $("#selectMedico").val();
+			var centroMedico = $("#selectCentro_Medico").val();
+			
+			//alert("email: "+ usuario + " - fechaHora:" + fechaHoraArray[0] + " " + fechaHoraArray[1] + " - idProfesional: " + medico + " - idCentroMedico: " + centroMedico);
+			
+			$.ajax({
+				url: "http://medicort.tribus.com.uy/fijarConsultaMedica",
+				type: "POST",
+				dataType: "json",
+				data: {email: usuario, fechaHora: fechaHoraArray[0] + " " + fechaHoraArray[1], idProfesional: medico, idCentroMedico: centroMedico},
+				success: function(response){
+					console.log("success",response);
+					$("#mensaje").text("Se ha registrado con exito la reserva medica.");
+				},error: function(err1, err2, err3){
+					if(err1.responseJSON)
+					{
+						$("#mensaje").text("Ocurrió un error inesperado. Intente nuevamente en unos segundos.");
+					}
+					console.log("err2",err2);
+					console.log("err3",err3);
+				}
+			});
+		}
+		
+	</script>
+</head>
+<body>
+	<div data-role="header">
+		<div class="header head_theme">
+			<div data-rel="back" class="back">
+				<a href=""><img src="theme/img/back.png"></a>
+			</div>
+			<div class="logo">
+				<img src="theme/img/ico_head.png">
+			</div>
+			<div class="menu">
+				<img src="theme/img/menu.png" class="show">
+				<img src="theme/img/menu_cross.png" class="noshow">
+			</div>
+		</div>
+	</div>
+	<div data-role="content">
+		<div role="main" class="ui-content">
+			<div class="Bienvenido2">Bienvenid@ <span id="fulanito"></span> - <a href="#">Salir</a></div>
+			<h2 class="Bienvenido">Agendar consulta medica</h2>
+			<p>Complete el siguiente formulario para agendar una consulta<br/><br/></p>
+			<label for="timezone">Fecha y hora</label>
+			<input type="hidden" id="timezone" name="timezone" value="-08:00">
+			<input id="txtFecha" type="datetime-local" placeholder="mm/dd/aaaa --:--:--"/>
+			<input id="txtUsuario" type="hidden" value="usuario"/>
+			<label for="selectMedico">Medico</label>
+			<select name="selectMedico" id="selectMedico"></select>
+			<label for="selectCentro_Medico">Centro Medico</label>
+			<select name="selectCentro_Medico" id="selectCentro_Medico"></select>
+			<p>&nbsp;</p>
+			<input type="button" value="Reservar" onclick="callReservar()" class="green" style="background-color: #22C7B7;"/>
+		</div>
+		<div id="mensaje"></div>
+	</div>
+	<div data-role="footer" id="foot">
+        <div data-role="navbar">
+            <ul>
+				<li><a href="index.html" data-icon="home">Inicio</a></li>
+				<li><a href="agendar.html" data-icon="calendar">Agendar</a></li>
+				<li><a href="buscarProfesional.html" data-icon="info">+ Info</a></li>
+				<li><a href="centros.html" data-icon="search">Buscar</a></li>
+			</ul>
+		</div>
+	</div>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta charset="UTF-8">
+	<title>Mi APP</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" href="favicon.ico" type="image/x-icon"/>
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<!-- Mi css -->
+	<link rel="stylesheet" href="theme/css/salud.css" />
+	<!-- JS -->
+	<script type='text/javascript'>
+		
+		$(document).ready(function(){
+			loadData();
+		});
+		
+		function loadData(){
+			var nombre = localStorage.getItem("usuario");
+			$("#fulanito").html(nombre);
+			localStorage.setItem("usuario", response.nombre);
+		}
+		
+		function irA(idUrl){
+			if(idUrl==1){
+				window.location.href = "agendar.html";
+			} else if(idUrl==2){
+				window.location.href = "historial.html";
+			} else if(idUrl==3){
+				window.location.href = "buscarProfesional.html";
+			} else if(idUrl==4){
+				window.location.href = "buscarEspecialidad.html";
+			} else {
+				window.location.href = "centros.html";
+			}
+		}
+		
+	</script>
+</head>
+<body>
+	<div data-role="header">
+		<div class="header head_theme">
+			<div data-rel="back" class="back">
+				<a href=""><img src="theme/img/back.png"></a>
+			</div>
+			<div class="logo">
+				<img src="theme/img/ico_head.png">
+			</div>
+			<div class="menu">
+				<img src="theme/img/menu.png" class="show">
+				<img src="theme/img/menu_cross.png" class="noshow">
+			</div>
+		</div>
+	</div>
+	<div data-role="content" class="marginTop">
+		<h2 class="Bienvenido">
+			Bienvenid@ <span id="fulanito"></span>
+		</h2>
+		<form>
+			<div class="width50">
+				<!-- Listado de items del usuario logueado--> 
+				<input value="Agendar consulta" type="button" onclick="irA(1);"/>
+				<input value="Historial de consultas" type="button" onclick="irA(2);"/>
+				<input value="Buscar Profesional" type="button" onclick="irA(3);"/>
+				<input value="Buscar por especialidad" type="button" onclick="irA(4);"/>
+				<input value="Lista de centros" type="button" onclick="irA(5);"/>
+			</div>
+		</form>
+	</div>
+	<div data-role="footer" id="foot">
+        <div data-role="navbar">
+            <ul>
+				<li><a href="index.html" data-icon="home">Inicio</a></li>
+				<li><a href="agendar.html" data-icon="calendar">Agendar</a></li>
+				<li><a href="buscarProfesional.html" data-icon="info">+ Info</a></li>
+				<li><a href="centros.html" data-icon="search">Buscar</a></li>
+			</ul>
+		</div>
+	</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

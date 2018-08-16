@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta charset="UTF-8">
+	<title>Mi APP</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" href="favicon.ico" type="image/x-icon"/>
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<!-- Mi css -->
+	<link rel="stylesheet" href="theme/css/salud.css" />
+	<!-- JS -->
+	<script type='text/javascript'>
+			
+		function callLogin(){
+			var email = $("#txtEmail").val();
+			var pass = $("#txtPass").val();
+			$.ajax({
+				url: "http://medicort.tribus.com.uy/login",
+				type: "GET",
+				dataType: "json",
+				data: {email: email, password: pass},
+				success: function(response){
+					console.log("success",response);
+					$("#mensaje").text("Bienvenido usuario de id: " + response.nombre);
+					localStorage.setItem("usuario", response.nombre);
+					//localStorage.setItem("usuario_email", email);
+					window.location.href="bienvenido.html";
+				},error: function(err1, err2, err3){
+					if(err1.responseJSON)
+					{
+						if(err1.responseJSON.resultado_login == false)
+						{
+							$("#mensaje").text("No existe un usuario con dichas credenciales");
+						} else {
+							$("#mensaje").text("Ocurrió un error inesperado. Intente nuevamente en unos segundos.");
+						}
+					}
+					console.log("err2",err2);
+					console.log("err3",err3);
+				}
+			});
+			//Guardo localmente el email del usuario
+			
+			
+			
+		}
+		
+	</script>
+</head>
+<body>
+	<div data-role="content" class="">
+		<div role="main" class="ui-content">
+			<div class="middle full">
+				<img src="theme/img/logo.png">
+			</div>
+			<input id="txtEmail" type="text" placeholder="Ingrese el email"/>
+			<input id="txtPass" type="text" placeholder="Ingrese el password"/>
+			<input type="button" value="Ingresar" onclick="callLogin()" class="green" style="background-color: #22C7B7;"/>
+			<a href="registro.html"><p id='nuevo'>Registrarse</p></a>
+		</div>
+		<p id='mensaje'></p>
+	</div>
+	<div data-role="footer" id="foot">
+        <div data-role="navbar">
+            <ul>
+				<li><a href="index.html" data-icon="home">Inicio</a></li>
+				<li><a href="agendar.html" data-icon="calendar">Agendar</a></li>
+				<li><a href="buscarProfesional.html" data-icon="info">+ Info</a></li>
+				<li><a href="centros.html" data-icon="search">Buscar</a></li>
+			</ul>
+		</div>
+	</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+

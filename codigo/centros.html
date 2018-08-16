@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta charset="UTF-8">
+	<title>Template generico</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="icon" href="favicon.ico" type="image/x-icon"/>
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon"/>
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+	<script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDhfTvXeR1_KtzXelJWoMu64w9RaZ7bmE8&callback=initMap" async defer></script>
+	<!-- Mi css -->
+	<link rel="stylesheet" href="theme/css/salud.css" />
+	<!-- JS -->
+	<script type="text/javascript">
+	
+		$(document).ready(function(){
+			loadData();
+		});
+		
+		function loadData(){
+			var nombre = localStorage.getItem("usuario");
+			$("#fulanito").html(nombre);
+			var usuario = localStorage.getItem("usuario_email");
+			$("#txtUsuario").val(usuario);
+			$(".infoCentroMedico").css("display", "none");
+			//Obtener centros medicos
+			callBuscarCentro();
+		}
+		
+		function callBuscarCentro(){
+		var i = 1;
+			$.ajax({
+				url: "http://medicort.tribus.com.uy/getCentrosMedicos",
+				type: "GET",
+				dataType: "json",
+				success: function(response){
+					console.log("success",response);
+					$("#selectCentro").append( '<option value="" disabled selected="selected" placeholder="aaa">Seleccione un centro medico</option>' );
+					$.each(response.centrosMedicos, function(index, item) {
+						$("#selectCentro").append( '<option value="' + i++ + '">' + item.nombre +  '</option>' );
+					});
+					$("#selectCentro").selectmenu("refresh");
+				},error: function(err1, err2, err3){
+					if(err1.responseJSON)
+					{
+						if(err1.responseJSON.resultado_login == false)
+						{
+							$("#mensaje").text("No se puede acceder al listado de medicos.");
+						} else {
+							$("#mensaje").text("Ocurrió un error inesperado. Intente nuevamente en unos segundos.");
+						}
+					}
+					console.log("err2",err2);
+					console.log("err3",err3);
+				}
+			});
+		}
+		
+		
+		
+		function callCentro(){
+			var centro = $("#selectCentro").val();
+			var aux = false;
+			$.ajax({
+				url: "http://medicort.tribus.com.uy/getCentrosMedicos",
+				type: "GET",
+				dataType: "json",
+				success: function(response){
+					console.log("success",response);
+					$.each(response.centrosMedicos, function(index, item) {
+						if(centro == item.id){
+							aux = true;
+							$(".infoCentroMedico").css("display", "block");
+							$(".nombreCentro").html(item.nombre);
+							$(".direccion").html(item.direccion);
+							initMap(item.localizacion.latitud, item.localizacion.longitud);
+						}
+					});
+					if(!aux){
+						$(".infoCentroMedico").html("No hay datos del cento disponibles.");
+					}
+				},error: function(err1, err2, err3){
+					if(err1.responseJSON)
+					{
+						if(err1.responseJSON.resultado_login == false)
+						{
+							$("#mensaje").text("No se puede acceder al listado de centros.");
+						} else {
+							$("#mensaje").text("Ocurrió un error inesperado. Intente nuevamente en unos segundos.");
+						}
+					}
+					console.log("err2",err2);
+					console.log("err3",err3);
+				}
+			});
+		}
+		
+		
+		function initMap(mLat, mLong) {
+			
+			var directionsDisplay = new google.maps.DirectionsRenderer;
+			var directionsService = new google.maps.DirectionsService;
+			var map = new google.maps.Map(document.getElementById('map'), {
+			  zoom: 14,
+			  center: {lat: mLat, lng: mLong}
+			});
+			directionsDisplay.setMap(map);
+			calculateAndDisplayRoute(directionsService, directionsDisplay, mLat, mLong);
+			document.getElementById('mode').addEventListener('change', function() {
+				calculateAndDisplayRoute(directionsService, directionsDisplay, mLat, mLong);
+			});
+		  }
+		  
+		  
+		  
+		  
+		  function calculateAndDisplayRoute(directionsService, directionsDisplay, mLat, mLong) {
+			var selectedMode = "DRIVING";
+			directionsService.route({
+			  origin: {lat: mLat, lng: mLong},  // Haight.
+			  destination: {lat: mLat, lng: mLong},  // Ocean Beach.
+			  // Note that Javascript allows us to access the constant
+			  // using square brackets and a string value as its
+			  // "property."
+			  travelMode: google.maps.TravelMode[selectedMode]
+			}, function(response, status) {
+			  if (status == 'OK') {
+				directionsDisplay.setDirections(response);
+			  } else {
+				window.alert('Directions request failed due to ' + status);
+			  }
+			});
+      }
+		
+		
+		function limpiar(){
+			//Apago lo que no necesito aun
+			$(".infoCentroMedico").css("display", "none");
+			//Limpio los campos
+			$(".centroMedico").html("");
+			$(".direccion").html("");
+			
+		}
+		
+	</script>
+</head>
+<body>
+	<div data-role="header">
+		<div class="header head_theme">
+			<div data-rel="back" class="back">
+				<a href=""><img src="theme/img/back.png"></a>
+			</div>
+			<div class="logo">
+				<img src="theme/img/ico_head.png">
+			</div>
+			<div class="menu">
+				<img src="theme/img/menu.png" class="show">
+				<img src="theme/img/menu_cross.png" class="noshow">
+			</div>
+		</div>
+	</div>
+	<div data-role="content">
+		<div role="main" class="ui-content">
+			<div class="Bienvenido2">Bienvenid@ <span id="fulanito"></span> - <a href="#">Salir</a></div>
+			<h2 class="Bienvenido">Listado de centros</h2>
+				<label for="selectCentro" class="selectCentro">Seleccione un centro</label>
+				<select name="selectCentro" id="selectCentro" class="selectCentro" onchange="limpiar()"></select>
+				<p>&nbsp;</p>
+				<input type="button" value="Ver informacion" onclick="callCentro()" class="green" id="searchMedico" style="background-color: #22C7B7;"/>
+			</div>
+			<div class="infoCentroMedico">
+				<div class="">
+					<h3>Datos del Centro Medico</h3>
+					Centro Medico: <span class="nombreCentro"></span>
+					<br/>
+					Direccion: <span class="direccion"></span>
+					<br/>
+					<div id="map"></div>
+				</div>
+			</div>
+		</div>
+		<div id="mensaje"></div>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+		<p>&nbsp;</p>
+	</div>
+	<div data-role="footer" id="foot">
+        <div data-role="navbar">
+            <ul>
+				<li><a href="bienvenido.html" data-icon="home">Inicio</a></li>
+				<li><a href="agendar.html" data-icon="calendar">Agendar</a></li>
+				<li><a href="#" data-icon="info">+ Info</a></li>
+				<li><a href="#" data-icon="search">Buscar</a></li>
+			</ul>
+		</div>
+	</div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
